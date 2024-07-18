@@ -108,7 +108,14 @@
             </div>
           </td>
           <td class="rsp-p2">{$ node.maintenance $}</td>
-          <td class="rsp-p2">{$ node.status $}</td>
+          <td class="rsp-p2">
+            <span ng-repeat="duration in node.lease_duration">
+              <b ng-if="$first && node.lease_duration[1]">{$ duration $}</b>
+              <span ng-if="!$first || !node.lease_duration[1]">{$ duration $}</span>
+              <br>
+            </span>
+          </td>
+          <td class="rsp-p2">{$ node.resource_class $}</td>
           <td class="actions_column">
             <action-list uib-dropdown>
               <button class="split-caret dropdown-toggle btn btn-default toggle"
@@ -121,7 +128,7 @@
                 {$ ::'Actions' | translate $}
               </button>
               <menu>
-                <li role="presentation">
+                <li role="presentation" ng-if="node.status != 'owned'">
                   <a class="text-danger"
                      role="menuitem"
                      ng-click="ctrl.deleteLease([node]);
@@ -187,7 +194,7 @@
         -->
         <tr ng-if="ctrl.config.expand" ng-repeat-end class="detail-row">
           <td class="detail" colspan="100">
-            <h4>{$ ::'Lease Info' | translate $}</h4>
+            <h4>{$ ::'Current Lease Info' | translate $}</h4>
             <div class="row">
               <div class="table-rsp">
                 <dl class="col-sm-3" ng-repeat="column in ctrl.config.lease_details" style="width: fit-content">

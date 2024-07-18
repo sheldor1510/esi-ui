@@ -43,6 +43,8 @@ def node_list(request):
         node_networks = {nn['node'].id: nn['network_info'] for nn in f3.result()}
 
     lease_node_list = [(lease, esi_nodes.get(lease.resource_uuid)) for lease in leases]
+    owned_node_list = [esi_nodes.get(node) for node in esi_nodes.keys() if node not in [lease.resource_uuid for lease in leases]]
+    
     node_infos = [
         {
             'uuid': lease.resource_uuid,
@@ -59,10 +61,42 @@ def node_list(request):
             'resource_class': lease.resource_class,
             'start_time': lease.start_time,
             'end_time': lease.end_time,
-            'status': lease.status
+            'status': lease.status,
+            'lease_duration': [lease.start_time.replace('T', ' ', 1) + " - " + lease.end_time.replace('T', ' ', 1)],
+            'leases': [{ 'id': lease.id, 'duration': lease.start_time.replace('T', ' ', 1) + " - " + lease.end_time.replace('T', ' ', 1), 'active': lease.status == 'active', 'displayText': lease.id + ' (' + lease.start_time.replace('T', ' ', 1) + ' - ' + lease.end_time.replace('T', ' ', 1) + ')' }]
         }
         for lease, e in lease_node_list
     ]
+    
+    for node in node_infos:
+        for lease in node_infos:
+            if node['name'] == lease['name'] and node['status'] == 'active' and lease['status'] != 'active':
+                node['lease_duration'].append(lease['lease_duration'][0])
+                node['leases'].append(lease['leases'][0])
+                lease['status'] = 'remove'
+
+    node_infos = list(filter(lambda node: node['status'] != 'remove', node_infos))
+
+    for node in owned_node_list:
+        node_infos.append({
+            'uuid': node.id,
+            'name': node.name,
+            'maintenance': node.maintenance,
+            'provision_state': node.provision_state,
+            'target_provision_state': node.target_provision_state,
+            'power_state': node.power_state,
+            'target_power_state': node.target_power_state,
+            'properties': [[key, value] for key, value in node.properties.items()],
+            'lease_uuid': '',
+            'owner': node.owner,
+            'lessee': '',
+            'resource_class': node.resource_class,
+            'start_time': '',
+            'end_time': '',
+            'status': 'owned',
+            'lease_duration': [],
+            'leases': []
+        })
 
     for node in node_infos:
         network_info = node_networks.get(node['uuid'])
