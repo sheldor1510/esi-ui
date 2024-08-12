@@ -128,16 +128,6 @@
                 {$ ::'Actions' | translate $}
               </button>
               <menu>
-                <li role="presentation" ng-if="node.status != 'owned'">
-                  <a class="text-danger"
-                     role="menuitem"
-                     ng-click="ctrl.deleteLease([node]);
-                               $event.stopPropagation();
-                               $event.preventDefault()">
-                    <span class="fa fa-trash"></span>
-                    {$ ::'Delete Lease' | translate $}
-                  </a>
-                </li>
                 <li role="presentation">
                   <a role="menuitem"
                      ng-if="node.status === 'active'"
@@ -159,6 +149,16 @@
                   </a>
                 </li>
                 <li role="presentation"
+                    ng-repeat="transition in ctrl.getPowerTransitions(node)"
+                    ng-if="node.target_power_state === null">
+                  <a role="menuitem"
+                      ng-click="ctrl.setPowerState([node], transition.state);
+                                $event.stopPropagation();
+                                $event.preventDefault()">
+                    {$ transition.buttonDisplay $}
+                  </a>
+                </li>
+                <li role="presentation"
                     ng-if="node.status === 'active'
                            && node.target_provision_state === null
                            && (node.provision_state === 'active' || node.provision_state === 'deploy failed')">
@@ -171,14 +171,14 @@
                     {$ ::'Unprovision' | translate $}
                   </a>
                 </li>
-                <li role="presentation"
-                    ng-repeat="transition in ctrl.getPowerTransitions(node)"
-                    ng-if="node.target_power_state === null">
-                  <a role="menuitem"
-                      ng-click="ctrl.setPowerState([node], transition.state);
-                                $event.stopPropagation();
-                                $event.preventDefault()">
-                    {$ transition.buttonDisplay $}
+                <li role="presentation" ng-if="node.status != 'owned'">
+                  <a class="text-danger"
+                     role="menuitem"
+                     ng-click="ctrl.deleteLease([node]);
+                               $event.stopPropagation();
+                               $event.preventDefault()">
+                    <span class="fa fa-trash"></span>
+                    {$ ::'Delete Lease' | translate $}
                   </a>
                 </li>
               </menu>
